@@ -8,7 +8,7 @@ import { expenses as expensesTable } from "@repo/db";
 import { zValidator } from "@hono/zod-validator";
 
 export const expensesRoute = new Hono()
-  .get("/", zValidator("query", expenseSchema.array()), async (c) => {
+  .get("/", async (c) => {
     const expenses = await db.select().from(expensesTable);
 
     return c.json({ expenses: expenses });
