@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { Expense, createPostSchema } from "@repo/schemas";
+import { expenseSchema, createPostSchema } from "@repo/schemas";
 
 import { db } from "@repo/db";
 import { expenses as expensesTable } from "@repo/db";
@@ -8,7 +8,7 @@ import { expenses as expensesTable } from "@repo/db";
 import { zValidator } from "@hono/zod-validator";
 
 export const expensesRoute = new Hono()
-  .get("/", async (c) => {
+  .get("/", zValidator("query", expenseSchema.array()), async (c) => {
     const expenses = await db.select().from(expensesTable);
 
     return c.json({ expenses: expenses });
