@@ -1,6 +1,7 @@
-import { pgTable, serial, text } from "drizzle-orm/pg-core";
+import { numeric, pgTable, serial, text } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
+export const expenses = pgTable("expenses", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  title: text("title").notNull(),
+  amount: numeric("amount", {precision: 12, scale: 2}).notNull(),
 });
