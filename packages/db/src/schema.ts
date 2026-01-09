@@ -1,4 +1,5 @@
-import { numeric, pgTable, serial, text } from "drizzle-orm/pg-core";
+
+import { numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const expenses = pgTable("expenses", {
   id: serial("id").primaryKey(),
@@ -6,4 +7,5 @@ export const expenses = pgTable("expenses", {
   amount: numeric("amount", { precision: 12, scale: 2 })
     .$type<number>()
     .notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
