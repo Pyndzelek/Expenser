@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { expenseSchema, createPostSchema } from "@repo/schemas";
+import { createPostSchema } from "@repo/schemas";
 
+import { desc } from "drizzle-orm";
 import { db } from "@repo/db";
 import { expenses as expensesTable } from "@repo/db";
 
@@ -9,7 +10,10 @@ import { zValidator } from "@hono/zod-validator";
 
 export const expensesRoute = new Hono()
   .get("/", async (c) => {
-    const expenses = await db.select().from(expensesTable);
+    const expenses = await db
+      .select()
+      .from(expensesTable)
+      .orderBy(desc(expensesTable.createdAt));
 
     return c.json({ expenses: expenses });
   })
@@ -22,7 +26,8 @@ export const expensesRoute = new Hono()
       amount: expense.amount,
     });
 
-    return c.json({ message: "Expense created", expenses: expense });
+    c.status(201);
+    return c.json({ message: "Expense created", response });
   })
   .get("/:id{[0-9]+}", (c) => {
     return c.json({ message: "Get expense by ID" });
