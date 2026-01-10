@@ -3,8 +3,17 @@ import { createInsertSchema } from "drizzle-zod";
 import { expenses } from "@repo/db/schema";
 
 const insertExpenseSchemaBase = createInsertSchema(expenses, {
-  title: z.string().min(2, "Title is required min  2"),
-  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  title: z
+    .string()
+    .nonempty("Title is required")
+    .min(2, "Title must be at least 2 characters long"),
+  amount: z
+    .number({
+      required_error: "Amount is required",
+      invalid_type_error: "Amount is required",
+    })
+    .refine((val) => !Number.isNaN(val), { message: "Amount is required" })
+    .refine((val) => val > 0, { message: "Amount must be greater than 0" }),
 });
 
 export const createExpenseSchema = insertExpenseSchemaBase.omit({

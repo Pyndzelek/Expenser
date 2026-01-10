@@ -15,8 +15,9 @@ function ExpensesList() {
   const { data: expenses, isLoading, error } = useGetExpenses();
 
   if (isLoading)
-    return <p className="text-muted-foreground">Loading expenses...</p>;
-  if (error) return <p className="text-destructive">Error: {error.message}</p>;
+    return <p className="p-4 text-muted-foreground">Loading expenses...</p>;
+  if (error)
+    return <p className="p-4 text-destructive">Error: {error.message}</p>;
 
   if (!expenses || expenses.length === 0) {
     return (
@@ -40,11 +41,11 @@ function ExpensesList() {
           </ItemMedia>
           <ItemContent>
             <ItemTitle>
-              {expense.amount} | {expense.title}
+              ${expense.amount} | {expense.title}
             </ItemTitle>
           </ItemContent>
           <ItemActions>
-            <ExpenseDialog variant="edit" />
+            <ExpenseDialog variant="edit" expense={expense} />
           </ItemActions>
         </Item>
       ))}

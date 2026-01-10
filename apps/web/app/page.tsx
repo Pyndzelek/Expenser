@@ -5,12 +5,16 @@ import {
 } from "@tanstack/react-query";
 
 import ExpenseCard from "@/components/expense-card";
-import { expensesQueryOptions } from "@/lib/api/expenses";
+import { getExpenses } from "@/lib/api/expenses";
+import { expensesKeys } from "@/hooks/use-expense";
 
 export default async function Home() {
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery(expensesQueryOptions);
+  await queryClient.prefetchQuery({
+    queryKey: expensesKeys.lists(),
+    queryFn: getExpenses,
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
