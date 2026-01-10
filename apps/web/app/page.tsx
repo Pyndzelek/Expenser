@@ -1,4 +1,4 @@
-import ExpenseDialog from "@/components/expense-dialog";
+import { client } from "@/lib/client";
 import {
   Card,
   CardHeader,
@@ -16,15 +16,18 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { client } from "@/lib/client";
-
 import { DollarSignIcon } from "lucide-react";
+import ExpenseDialog from "@/components/expense-dialog";
 
 export default async function Home() {
-  const res = await client.api.expenses.$get();
+  const res = await client.api.expenses.$get(undefined, {
+    init: {
+      cache: "no-store", // Don't cache this, fetch fresh data every time
+    },
+  });
 
   if (!res.ok) {
-    throw new Error(`Error: ${res.status} ${res.statusText}`);
+    throw new Error("Failed to fetch expenses");
   }
 
   const { expenses } = await res.json();

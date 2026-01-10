@@ -1,7 +1,6 @@
 import { Hono } from "hono";
-import { createPostSchema } from "@repo/schemas";
+import { createExpenseSchema } from "@repo/schemas";
 
-import { desc } from "drizzle-orm";
 import { db } from "@repo/db";
 import { expenses as expensesTable } from "@repo/db";
 
@@ -13,12 +12,12 @@ export const expensesRoute = new Hono()
     const expenses = await db
       .select()
       .from(expensesTable)
-      .orderBy(desc(expensesTable.createdAt));
+      .orderBy(expensesTable.createdAt);
 
     return c.json({ expenses: expenses });
   })
 
-  .post("/", zValidator("json", createPostSchema), async (c) => {
+  .post("/", zValidator("json", createExpenseSchema), async (c) => {
     const expense = c.req.valid("json");
 
     const response = await db.insert(expensesTable).values({

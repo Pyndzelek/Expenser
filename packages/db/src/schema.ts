@@ -1,4 +1,3 @@
-
 import { numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const expenses = pgTable("expenses", {

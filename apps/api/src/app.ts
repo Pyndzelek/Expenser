@@ -8,7 +8,17 @@ const app = new Hono();
 app.use("*", logger());
 app.use("*", cors());
 
-// Custom Error Handling
+const routes = app
+  .basePath("/api")
+  .get("/health", (c) => {
+    return c.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    });
+  })
+  .route("/expenses", expensesRoute);
+
+// Error Handling
 app.onError((err, c) => {
   console.error(`Global Error: ${err.message}`);
   return c.json({ error: "Internal Server Error", message: err.message }, 500);
@@ -19,16 +29,6 @@ app.notFound((c) => {
     404
   );
 });
-
-const routes = app
-  .basePath("/api")
-  .get("/health", (c) => {
-    return c.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-    });
-  })
-  .route("/expenses", expensesRoute);
 
 export default app;
 export type AppType = typeof routes;
