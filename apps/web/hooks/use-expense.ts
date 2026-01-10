@@ -2,46 +2,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { client } from "@/lib/client";
 import { toast } from "sonner";
 import { CreateExpense } from "@repo/schemas";
+import { Expense } from "@repo/schemas";
+import { expensesQueryOptions } from "@/lib/api/expenses";
 
 export const expensesKeys = {
-  all: ["expenses", "list"] as const,
+  all: ["expenses"] as const,
+  lists: () => [...expensesKeys.all, "list"] as const,
 };
 
 export const useGetExpenses = () => {
   return useQuery({
-    queryKey: expensesKeys.all,
-    queryFn: async () => {
-      const res = await client.api.expenses.$get();
+    ...expensesQueryOptions,
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch expenses");
-      }
-
-      const { expenses } = await res.json();
-      return expenses;
-    },
-  });
-};
-
-export const usePostExpense = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (values: CreateExpense) => {
-      const res = await client.api.expenses.$post({ json: values });
-
-      if (!res.ok) {
-        throw new Error("Update failed");
-      }
-
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: expensesKeys.all });
-      toast.success("Expense added!");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    select: (data) =>
+      data.map((e) => ({
+        ...e,
+        createdAt: new Date(e.createdAt),
+      })),
   });
 };
