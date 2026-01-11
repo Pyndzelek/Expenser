@@ -31,17 +31,19 @@ export const usePostExpense = () => {
       if (!res.ok) throw new Error("Failed to create");
       return await res.json();
     },
-    // optimistic UPDATE
     onMutate: async (newExpense) => {
       await queryClient.cancelQueries({ queryKey: expensesKeys.lists() });
-      const previousExpenses = queryClient.getQueryData(expensesKeys.lists());
-      queryClient.setQueryData(expensesKeys.lists(), (old: any[] = []) => [
+      const previousExpenses = queryClient.getQueryData<Expense[]>(
+        expensesKeys.lists()
+      );
+
+      queryClient.setQueryData<Expense[]>(expensesKeys.lists(), (old = []) => [
         ...old,
         {
           ...newExpense,
           id: Math.random(), // Temp id
-          createdAt: new Date().toISOString(),
-          amount: String(newExpense.amount.toFixed(2)),
+          createdAt: new Date(),
+          amount: Number(newExpense.amount.toFixed(2)),
         },
       ]);
 
@@ -83,17 +85,20 @@ export const useUpdateExpense = () => {
       if (!res.ok) throw new Error("Failed to update");
       return await res.json();
     },
+
     onMutate: async ({ id, values }) => {
       await queryClient.cancelQueries({ queryKey: expensesKeys.lists() });
-      const previousExpenses = queryClient.getQueryData(expensesKeys.lists());
+      const previousExpenses = queryClient.getQueryData<Expense[]>(
+        expensesKeys.lists()
+      );
 
-      queryClient.setQueryData(expensesKeys.lists(), (old: any[] = []) =>
+      queryClient.setQueryData<Expense[]>(expensesKeys.lists(), (old = []) =>
         old.map((expense) =>
-          expense.id === id
+          String(expense.id) === String(id)
             ? {
                 ...expense,
-                ...values, // Overwrite with new values
-                amount: values.amount.toFixed(2),
+                ...values,
+                amount: Number(values.amount.toFixed(2)),
               }
             : expense
         )
@@ -108,7 +113,9 @@ export const useUpdateExpense = () => {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: expensesKeys.lists() });
     },
-    onSuccess: () => toast.success("Expense updated!"),
+    onSuccess: () => {
+      toast.success("Expense updated!");
+    },
   });
 };
 
@@ -118,7 +125,6 @@ export const useDeleteExpense = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       const res = await client.api.expenses[":id"].$delete({ param: { id } });
-      if (!res.ok) throw new Error("Failed to delete");
       return await res.json();
     },
     onMutate: async (id) => {
@@ -126,18 +132,17 @@ export const useDeleteExpense = () => {
       const previousExpenses = queryClient.getQueryData(expensesKeys.lists());
 
       queryClient.setQueryData(expensesKeys.lists(), (old: any[] = []) =>
-        old.filter((expense) => expense.id !== id)
+        old.filter((expense) => String(expense.id) !== String(id))
       );
 
       return { previousExpenses };
     },
-    onError: (_err, _id, context) => {
+    onError: (_err, _args, context) => {
       queryClient.setQueryData(expensesKeys.lists(), context?.previousExpenses);
-      toast.error("Failed to delete expense");
+      toast.error("Failed to Delete expense");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: expensesKeys.lists() });
     },
-    onSuccess: () => toast.success("Expense deleted"),
   });
 };

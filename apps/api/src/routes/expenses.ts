@@ -3,14 +3,14 @@ import { zValidator } from "@hono/zod-validator";
 import { createExpenseSchema } from "@repo/schemas";
 import { db } from "@repo/db";
 import { expenses as expensesTable } from "@repo/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 
 export const expensesRoute = new Hono()
   .get("/", async (c) => {
     const expenses = await db
       .select()
       .from(expensesTable)
-      .orderBy(desc(expensesTable.createdAt))
+      .orderBy(asc(expensesTable.createdAt))
       .limit(100);
 
     return c.json({ expenses: expenses });

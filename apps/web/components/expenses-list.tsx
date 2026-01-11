@@ -10,6 +10,7 @@ import {
 import { DollarSignIcon } from "lucide-react";
 import ExpenseDialog from "./expense-dialog";
 import { useGetExpenses } from "@/hooks/use-expense";
+import { DeleteExpenseButton } from "./delete-expense-button";
 
 function ExpensesList() {
   const { data: expenses, isLoading, error } = useGetExpenses();
@@ -27,6 +28,10 @@ function ExpensesList() {
     );
   }
 
+  const formatAmount = (amount: number | string) => {
+    return Number(amount).toFixed(2);
+  };
+
   return (
     <div className="flex flex-col gap-3 w-full">
       {expenses.map((expense) => (
@@ -41,10 +46,11 @@ function ExpensesList() {
           </ItemMedia>
           <ItemContent>
             <ItemTitle>
-              ${expense.amount} | {expense.title}
+              ${formatAmount(expense.amount)} | {expense.title}
             </ItemTitle>
           </ItemContent>
           <ItemActions>
+            <DeleteExpenseButton id={expense.id.toString()} />
             <ExpenseDialog variant="edit" expense={expense} />
           </ItemActions>
         </Item>

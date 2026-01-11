@@ -54,20 +54,18 @@ function ExpenseDialog({ variant, expense }: ExpenseDialogProps) {
   }, [expense, reset, variant]);
 
   const onSubmit = (data: CreateExpense) => {
-    if (variant === "add") {
-      mutate(data);
-    } else if (variant === "edit" && expense) {
+    if (variant === "edit" && expense) {
       mutateUpdate({ id: expense.id.toString(), values: data });
+    } else {
+      mutate(data);
     }
+
     setOpen(false);
 
     if (variant === "add") {
       setTimeout(() => {
-        reset({
-          title: "",
-          amount: "" as any,
-        });
-      }, 150);
+        reset({ title: "", amount: "" as any });
+      }, 300);
     }
   };
 
