@@ -15,7 +15,6 @@ export const expensesRoute = new Hono()
 
     return c.json({ expenses: expenses });
   })
-
   .post("/", zValidator("json", createExpenseSchema), async (c) => {
     const expense = c.req.valid("json");
 
@@ -27,8 +26,7 @@ export const expensesRoute = new Hono()
     c.status(201);
     return c.json(validatedExpense);
   })
-
-  .get("/:id{[0-9]+}", async (c) => {
+  .get("/:id", async (c) => {
     const id = Number(c.req.param("id"));
 
     const expense = await db.query.expenses.findFirst({
@@ -38,8 +36,7 @@ export const expensesRoute = new Hono()
     if (!expense) return c.notFound();
     return c.json({ expense });
   })
-
-  .put("/:id{[0-9]+}", zValidator("json", createExpenseSchema), async (c) => {
+  .put("/:id", zValidator("json", createExpenseSchema), async (c) => {
     const id = Number(c.req.param("id"));
     const data = c.req.valid("json");
 
@@ -55,8 +52,7 @@ export const expensesRoute = new Hono()
 
     return c.json({ expense: updatedExpense });
   })
-
-  .delete("/:id{[0-9]+}", async (c) => {
+  .delete("/:id", async (c) => {
     const id = Number(c.req.param("id"));
 
     const [deletedExpense] = await db

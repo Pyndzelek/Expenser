@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createExpenseSchema, CreateExpense, Expense } from "@repo/schemas";
-import { usePostExpense } from "@/hooks/use-expense";
+import { usePostExpense, useUpdateExpense } from "@/hooks/use-expense";
 
 import {
   Dialog,
@@ -29,6 +29,7 @@ interface ExpenseDialogProps {
 function ExpenseDialog({ variant, expense }: ExpenseDialogProps) {
   const [open, setOpen] = useState(false);
   const { mutate } = usePostExpense();
+  const { mutate: mutateUpdate } = useUpdateExpense();
 
   const {
     register,
@@ -53,8 +54,11 @@ function ExpenseDialog({ variant, expense }: ExpenseDialogProps) {
   }, [expense, reset, variant]);
 
   const onSubmit = (data: CreateExpense) => {
-    //Optimistic Update
-    mutate(data);
+    if (variant === "add") {
+      mutate(data);
+    } else if (variant === "edit" && expense) {
+      mutateUpdate({ id: expense.id.toString(), values: data });
+    }
     setOpen(false);
 
     if (variant === "add") {
