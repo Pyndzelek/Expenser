@@ -144,5 +144,8 @@ export const useDeleteExpense = () => {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: expensesKeys.lists() });
     },
+    onSuccess: () => {
+      toast.success("Expense deleted!");
+    },
   });
 };
