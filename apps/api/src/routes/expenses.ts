@@ -1,18 +1,17 @@
 import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
 import { createExpenseSchema } from "@repo/schemas";
-
 import { db } from "@repo/db";
 import { expenses as expensesTable } from "@repo/db";
-
-//This function runs as a middleware between each request and response
-import { zValidator } from "@hono/zod-validator";
+import { eq, desc } from "drizzle-orm";
 
 export const expensesRoute = new Hono()
   .get("/", async (c) => {
     const expenses = await db
       .select()
       .from(expensesTable)
-      .orderBy(expensesTable.createdAt);
+      .orderBy(desc(expensesTable.createdAt))
+      .limit(100);
 
     return c.json({ expenses: expenses });
   })
@@ -20,17 +19,54 @@ export const expensesRoute = new Hono()
   .post("/", zValidator("json", createExpenseSchema), async (c) => {
     const expense = c.req.valid("json");
 
-    const response = await db.insert(expensesTable).values({
-      title: expense.title,
-      amount: expense.amount,
-    });
+    const [validatedExpense] = await db
+      .insert(expensesTable)
+      .values(expense)
+      .returning();
 
     c.status(201);
-    return c.json({ message: "Expense created", response });
+    return c.json(validatedExpense);
   })
-  .get("/:id{[0-9]+}", (c) => {
-    return c.json({ message: "Get expense by ID" });
+
+  .get("/:id{[0-9]+}", async (c) => {
+    const id = Number(c.req.param("id"));
+
+    const expense = await db.query.expenses.findFirst({
+      where: eq(expensesTable.id, id),
+    });
+
+    if (!expense) return c.notFound();
+    return c.json({ expense });
   })
-  .delete("/:id{[0-9]+}", (c) => {
-    return c.json({ message: "Delete expense by ID" });
+
+  .put("/:id{[0-9]+}", zValidator("json", createExpenseSchema), async (c) => {
+    const id = Number(c.req.param("id"));
+    const data = c.req.valid("json");
+
+    const [updatedExpense] = await db
+      .update(expensesTable)
+      .set(data)
+      .where(eq(expensesTable.id, id))
+      .returning();
+
+    if (!updatedExpense) {
+      return c.notFound();
+    }
+
+    return c.json({ expense: updatedExpense });
+  })
+
+  .delete("/:id{[0-9]+}", async (c) => {
+    const id = Number(c.req.param("id"));
+
+    const [deletedExpense] = await db
+      .delete(expensesTable)
+      .where(eq(expensesTable.id, id))
+      .returning();
+
+    if (!deletedExpense) {
+      return c.notFound();
+    }
+
+    return c.json({ expense: deletedExpense });
   });
